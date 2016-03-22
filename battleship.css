@@ -1,13 +1,13 @@
 body {
-    background-color: black;
+	background-color: black;
 }
 
 div#board {
-    position: relative;
-    width: 1024px;
-    height: 863px;
-    margin: auto;
-    background: url("images/board.jpg") no-repeat;
+	position: relative;
+	width: 1024px;
+	height: 863px;
+	margin: auto;
+	background: url("images/board.jpg") no-repeat;
 }
 
 div#messageArea {
