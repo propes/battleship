@@ -43,12 +43,9 @@ var model = {
 	shipLength: 3,
 	shipsSunk: 0,
 	
-	//ships: [{ locations: ["06", "16", "26"], hits: [false, false, false] },
-	//		{ locations: ["24", "34", "44"], hits: [false, false, false] },
-	//		{ locations: ["10", "11", "12"], hits: [false, false, false] }],
-	ships: [new ship(["06", "16", "26"]),
-					new ship(["24", "34", "44"]),
-					new ship(["10", "11", "12"])],
+	ships: [new ship([0, 0, 0]),
+			new ship([0, 0, 0]),
+			new ship([0, 0, 0])],
 				 	
 	fire: function(guess) {
 		
@@ -98,33 +95,66 @@ var model = {
 		return true;
 	},
 	
-	generateShipsLocations: function() {
+	generateShipLocations: function() {
 		var locations;
 		
 		// Loop for the number of ships we want to create.
 		for (var i = 0; i < this.numShips; i++) {
 			
-			// Generate a new ship.
+			do {
+				// Generate a new ship.
+				locations = this.generateShip();
 		
-			// Test to see if the new ship's locations collide with any
-			// existing ships' location.
-		
-				// Add the new ship's locations to the ships array.
+				// Test to see if the new ship's locations collide with any
+				// existing ships' location.
+			} while (this.collision(locations));
+			
+			// Add the new ship's locations to the ships array.
+			this.ships[i].locations = locations;
+			console.log("New ship at: " + locations);
 		}
 	},
 	
-	generateShip: function(ship) {
-			// Generate a random direction for the new ship.
-			var direction = Math.floor(Math.random() * 2)
-			
-			// Generate a random location for the new ship.
-			var startRow = Math.floor(Math.random() * 7);
-			var startCol = Math.floor(Math.random() * 7);
-			
-			ship.locations[0] = String(startRow) + startCol
+	generateShip: function() {
+		var direction = Math.floor(Math.random() * 2);
+		var row;
+		var col;	
+		
+		if (direction === 1) {
+			// Generate a starting location for a horizontal ship.
+			row = Math.floor(Math.random() * this.boardSize);
+			col = Math.floor(Math.random() * (this.boardSize - this.shipLength + 1));		
+		} else {
+			// Generate a starting location for a vertical ship.
+			row = Math.floor(Math.random() * (this.boardSize - this.shipLength + 1));
+			col = Math.floor(Math.random() * this.boardSize);
+		}
+		
+		var newShipLocations = [];
+		for (var i = 0; i < this.shipLength; i++) {
+			if (direction === 1) {
+				// Add location to array for new horizontal ship.
+				newShipLocations.push(row + "" + (col + i));
+			} else {
+				// Add location to array for new vertical ship.
+				newShipLocations.push((row + i) + "" + col);
+			}
+		}
+		
+		return newShipLocations;
 	},
 	
-	collision: function(ship) {
+	collision: function(locations) {
+		for (var i = 0; i < this.numShips; i++) {
+			var ship = this.ships[i];
+			for (var j = 0; j < locations.length; j++) {
+				if (ship.locations.indexOf(locations[j]) >= 0) {
+					return true;
+				}
+			}
+		}
+		
+		return false;	
 	},
 };
 
@@ -192,7 +222,7 @@ var parseGuessTester = {
 		this.runTest(15);
 		this.runTest("H0");
 		this.runTest("A0");
-		this.runTest("G6")
+		this.runTest("G6");
 		this.runTest("barry");
 		this.runTest("G8");
 		this.runTest(false);
@@ -234,10 +264,13 @@ function init() {
 	var guessInput = document.getElementById("guessInput");
 	guessInput.onkeypress = handleKeyPress;
 
+	// Generate ship locations.
+	model.generateShipLocations();
+
 	//** Run tests.	
 	//parseGuessTester.runBatch();
 	//controllerTester.runBatch();	
-};
+}
 
 function handleFireButton() {
 	var guessInput = document.getElementById("guessInput");
@@ -245,7 +278,7 @@ function handleFireButton() {
 	controller.processGuess(guess);
 	
 	guessInput.value = "";
-};
+}
 
 function handleKeyPress(e) {
 	if (e.keyCode === 13) {
@@ -273,7 +306,7 @@ function drawGrid(rowCount, colCount) {
 		}
 		
 		// Add row closing tag.
-		htmlArray.push("</tr>")
+		htmlArray.push("</tr>");
 	}
 	
 	// Add closing table tag.
@@ -290,39 +323,39 @@ function drawGrid(rowCount, colCount) {
 // Draws a grid using the DOM.
 function drawGrid2(rowCount, colCount) {
 
-		var grid;
-		var table;
-		var rowNode;
-		var cell;
+	var grid;
+	var table;
+	var rowNode;
+	var cell;
 
-		// Get the element for the grid.
-		grid = document.getElementById("grid");
+	// Get the element for the grid.
+	grid = document.getElementById("grid");
+	
+	// Add a table element
+	table = document.createElement("table");
+	
+	// Add the table node to the grid.
+	grid.appendChild(table);
+	
+	
+	// For each row and column add a child element to the grid.
+	for (var row = 0; row < rowCount; row++) {
+		// Create a row node.
+		rowNode = document.createElement("tr");
 		
-		// Add a table element
-		table = document.createElement("table");
+		// Add the row node to the table.
+		table.appendChild(rowNode);
 		
-		// Add the table node to the grid.
-		grid.appendChild(table);
-		
-		
-		// For each row and column add a child element to the grid.
-		for (var row = 0; row < rowCount; row++) {
-			// Create a row node.
-			rowNode = document.createElement("tr");
+		// For each column add a cell element.
+		for (var col = 0; col < colCount; col++) {
+			// Create a cell node.
+			cell = document.createElement("td");
+			cell.id = String(row) + col;
 			
-			// Add the row node to the table.
-			table.appendChild(rowNode);
-			
-			// For each column add a cell element.
-			for (var col = 0; col < colCount; col++) {
-				// Create a cell node.
-				cell = document.createElement("td");
-				cell.id = String(row) + col;
-				
-				// Append the cell node to the row.
-				rowNode.appendChild(cell);
-			}
+			// Append the cell node to the row.
+			rowNode.appendChild(cell);
 		}
+	}
 }
 
 window.onload = init;
